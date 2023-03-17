@@ -1,0 +1,46 @@
+version: "3"
+
+services:
+  percona:
+    image: percona
+    restart: always
+    container_name: percona
+    ports:
+      - "3309:3309"
+    volumes:
+      - mysql:/var/lib/mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_DATABASE: test
+
+  phpmyadminpercona:
+    image: phpmyadmin/phpmyadmin
+    container_name: pmapercona
+    links:
+      - percona
+    environment:
+      PMA_HOST: percona
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    ports:
+      - 8081:80
+
+  postgre:
+    image: postgres:10.5
+    container_name: postgre
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5438:5432'
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      # copy the sql script to create tables
+      - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+volumes:
+  mysql:
+    driver: local
